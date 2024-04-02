@@ -46,7 +46,7 @@ export const EmailForm = ({
           className="block text-start ms-2 py-1 font-semibold"
           htmlFor="subject"
         >
-          Texto: <span className="opacity-90">(opcional)</span>
+          Asunto: <span className="opacity-90">(opcional)</span>
         </label>
         <div className="h-[42px] absolute bottom-0 start-0 flex items-center ps-3 pointer-events-none [&>*]:size-4 text-gray-500 dark:text-gray-400">
           <EmailIcon />

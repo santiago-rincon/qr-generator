@@ -1,5 +1,5 @@
 import { QrForm } from "@types";
-import { FieldErrors, UseFormRegister } from "react-hook-form";
+import { FieldErrors, UseFormRegister, UseFormWatch } from "react-hook-form";
 import { WifiIcon } from "@icons/Wifi";
 import { LockIcon } from "@icons/Lock";
 import { ErrorSpan } from "@components/ErrorSpan";
@@ -7,9 +7,11 @@ import { ErrorSpan } from "@components/ErrorSpan";
 export const WifiForm = ({
   registry,
   errors,
+  watch,
 }: {
   registry: UseFormRegister<QrForm>;
   errors: FieldErrors<QrForm>;
+  watch: UseFormWatch<QrForm>;
 }) => {
   return (
     <div className="relative w-full">
@@ -33,6 +35,11 @@ export const WifiForm = ({
       </div>
       {errors.ssid?.type === "required" && (
         <ErrorSpan>El campo es requerido</ErrorSpan>
+      )}
+      {watch("ssid")?.includes(" ") && (
+        <ErrorSpan className="text-yellow-400">
+          Los ssid con "espacios" pueden no funcionar correctamente
+        </ErrorSpan>
       )}
       <div className="relative first:m-0 mt-3">
         <label
@@ -67,11 +74,12 @@ export const WifiForm = ({
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
           {...registry("cypher", {
             required: true,
-            pattern: /\b(WEP|WPA\/WPA2)/,
+            pattern: /\b(WEP|WPA|nopass)/,
           })}
         >
+          <option value="nopass">Sin encriptación</option>
+          <option value="WPA">WPA/WPA2</option>
           <option value="WEP">WEP</option>
-          <option value="WPA/WPA2">WPA/WPA2</option>
         </select>
       </div>
       {errors.cypher?.type === "required" && (

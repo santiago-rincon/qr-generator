@@ -17,7 +17,10 @@ export const PhoneForm = ({
           className="block text-start ms-2 py-1 font-semibold"
           htmlFor="phone"
         >
-          Teléfono:
+          Teléfono:{" "}
+          <span className="opacity-90">
+            (sin espacios ni caracteres especiales)
+          </span>
         </label>
         <div className="h-[42px] absolute bottom-0 start-0 flex items-center ps-3 pointer-events-none [&>*]:size-4 text-gray-500 dark:text-gray-400">
           <PhoneIcon />
@@ -37,7 +40,7 @@ export const PhoneForm = ({
         <ErrorSpan>El campo es requerido</ErrorSpan>
       )}
       {errors.phone?.type === "pattern" && (
-        <ErrorSpan>El valor ingresado no es un número válido</ErrorSpan>
+        <ErrorSpan>El valor ingresado no es un número válido ()</ErrorSpan>
       )}
     </div>
   );
