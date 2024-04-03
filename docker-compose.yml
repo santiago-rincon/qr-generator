@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  frontend:
+    container_name: qrpy_frontend
+    image: frontend_react_qr
+    build: ./frontend
+    ports:
+      - 80:80
+    depends_on:
+      - backend
+  backend:
+    container_name: qrpy_backend
+    image: backend_flask_qr
+    build: ./backend
