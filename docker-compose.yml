@@ -12,3 +12,5 @@ services:
     container_name: qrpy_backend
     image: backend_flask_qr
     build: ./backend
+    ports:
+      - 8000:8000
