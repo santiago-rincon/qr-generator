@@ -4,18 +4,19 @@ export interface QrType {
 }
 
 export interface QrForm {
-  qrType: QrVariants;
-  url: string;
-  text: string;
-  ssid: string;
-  password: string;
-  cypher: string;
-  phone: string;
-  email: string;
-  subject: string;
   body_email: string;
-  phone_sms: string;
   body_sms: string;
+  cypher: string;
+  email: string;
+  ext: string;
+  password: string;
+  phone_sms: string;
+  phone: string;
+  qrType: QrVariants;
+  ssid: string;
+  subject: string;
+  text: string;
+  url: string;
 }
 
 type QrVariants =
