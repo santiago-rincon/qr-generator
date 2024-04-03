@@ -6,12 +6,6 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route('/')
-def index():
-    print(request)
-    return "<h1>Hola mundo V1</h1>"
-
-
 @app.route('/api/qr', methods=['POST'])
 def generate_qr():
     body = request.get_json()
