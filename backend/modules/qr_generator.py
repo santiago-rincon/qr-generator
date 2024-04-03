@@ -5,6 +5,8 @@ import qrcode.image.svg as svg
 
 
 def make_qr(text, ext):
+    if not os.path.exists('imgs'):
+        os.mkdir('imgs')
     if ext == '.svg':
         factory = svg.SvgPathImage
         img = qrcode.make(text, image_factory=factory)
