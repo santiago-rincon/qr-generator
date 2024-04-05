@@ -1,14 +1,9 @@
-export interface QrType {
-  label: QrVariants;
-  selected?: boolean;
-}
-
 export interface QrForm {
   body_email: string;
   body_sms: string;
   cypher: string;
   email: string;
-  ext: string;
+  ext: FormatsImage;
   password: string;
   phone_sms: string;
   phone: string;
@@ -17,12 +12,17 @@ export interface QrForm {
   subject: string;
   text: string;
   url: string;
+  size: number;
+  foreground: `#${string}`;
+  background: `#${string}`;
 }
 
-type QrVariants =
+export type QrVariants =
   | "Texto"
   | "Url"
   | "WiFi"
   | "Teléfono"
   | "Email"
   | "Mensaje (SMS)";
+
+export type FormatsImage = "png" | "jpeg" | "svg" | "webp";

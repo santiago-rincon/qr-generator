@@ -10,8 +10,8 @@ export default defineConfig({
       "@components": path.resolve(__dirname, "./src/components"),
       "@icons": path.resolve(__dirname, "./src/icons"),
       "@types": path.resolve(__dirname, "./src/types.d.ts"),
+      "@const": path.resolve(__dirname, "./src/const.ts"),
       "@utils": path.resolve(__dirname, "./src/utils"),
     },
   },
 });
-

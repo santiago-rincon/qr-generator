@@ -1,32 +1,25 @@
 import "./Form.css";
 import "react-toastify/dist/ReactToastify.css";
+import { FormatsImage } from "@types";
 import { ToastContainer, toast, Bounce } from "react-toastify";
+import { toastOptions } from "@const";
 
 export const Qr = ({
   src,
+  ext,
   setSrc,
 }: {
   src: string;
+  ext: FormatsImage;
   setSrc: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const downloadFile = () => {
-    const mimeType = src.split(";")[0].split(":")[1];
     const link = document.createElement("a");
     link.href = src;
-    link.download = mimeType === "image/png" ? "qr.png" : "qr.svg";
+    link.download = `qr.${ext}`;
     link.click();
     link.remove();
-    toast.success("Descarga completa", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
-      transition: Bounce,
-    });
+    toast.success("Descarga completa", toastOptions);
     return;
   };
   return (

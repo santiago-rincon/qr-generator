@@ -1,18 +1,21 @@
-import "react-toastify/dist/ReactToastify.css";
 import "./Form.css";
+import "react-toastify/dist/ReactToastify.css";
 import { EmailForm } from "@components/forms/EmailForm";
+import { ErrorSpan } from "@components/ErrorSpan";
 import { generateText } from "@utils/generateText";
 import { PhoneForm } from "@components/forms/PhoneForm";
 import { Qr } from "@components/Qr";
-import { QrForm, QrType } from "@types";
+import { QrForm } from "@types";
 import { SmsForm } from "@components/forms/SmsForm";
 import { Sppiner } from "@components/Sppiner";
 import { TextForm } from "@components/forms/TextForm";
 import { ToastContainer, toast, Bounce } from "react-toastify";
+import { types, formats, toastOptions } from "@const";
 import { UrlForm } from "@components/forms/UrlForm";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useState } from "react";
 import { WifiForm } from "@components/forms/WifiForm";
+import QRCode from "qrcode";
 
 export const Form = () => {
   const {
@@ -21,65 +24,60 @@ export const Form = () => {
     watch,
     formState: { errors },
   } = useForm<QrForm>({
-    defaultValues: { qrType: "Url", ext: ".png" },
+    defaultValues: {
+      qrType: "Url",
+      ext: "png",
+      size: 500,
+      foreground: "#000000",
+      background: "#ffffff",
+    },
   });
-  const types: QrType[] = [
-    {
-      label: "Url",
-    },
-    {
-      label: "Texto",
-    },
-    {
-      label: "WiFi",
-    },
-    {
-      label: "Teléfono",
-    },
-    {
-      label: "Email",
-    },
-    {
-      label: "Mensaje (SMS)",
-    },
-  ];
   const [loading, setLoading] = useState(false);
   const [base64Qr, setBase64Qr] = useState("");
   const qrType = watch("qrType");
   const onSubmit: SubmitHandler<QrForm> = async (data) => {
+    setLoading(true);
     const text = generateText(data);
-    const ext = data.ext;
-    const mimeType = data.ext === ".png" ? "image/png" : "image/svg+xml";
+    const { ext, background, foreground, size } = data;
     try {
-      setLoading(true);
-      const res = await fetch(import.meta.env.VITE_BACKEND_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text,
-          ext,
-        }),
-      });
-      if (!res.ok) {
-        throw new Error("Error al generar el QR");
+      if (ext === "svg") {
+        const qr = await QRCode.toString(text, {
+          type: "utf8",
+          width: size,
+          color: {
+            dark: foreground,
+            light: background,
+          },
+        });
+        setBase64Qr(`data:image/svg+xml;base64,${btoa(qr)}`);
+      } else {
+        let type: "image/png" | "image/jpeg" | "image/webp" = "image/png";
+        if (ext === "png") type = "image/png";
+        if (ext === "jpeg") type = "image/jpeg";
+        if (ext === "webp") type = "image/webp";
+        const qr = await QRCode.toDataURL(text, {
+          type: type,
+          width: size,
+          color: {
+            dark: foreground,
+            light: background,
+          },
+        });
+        setBase64Qr(qr);
       }
-      const { base64 } = await res.json();
-      setBase64Qr(`data:${mimeType};base64,${base64}`);
     } catch (error) {
-      console.log(error);
-      toast.error("Ha ocurrido un error, inténtalo más tarde", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        transition: Bounce,
-      });
+      if (
+        error instanceof Error &&
+        error.message ===
+          "The amount of data is too big to be stored in a QR Code"
+      ) {
+        toast.error(
+          "La cantidad de datos es demasiado grande para almacenarla en un código QR",
+          toastOptions
+        );
+      } else {
+        toast.error("Ha ocurrido un error, inténtalo más tarde", toastOptions);
+      }
     } finally {
       setLoading(false);
     }
@@ -104,46 +102,103 @@ export const Form = () => {
         <Sppiner />
       ) : base64Qr.length === 0 ? (
         <form
-          className="max-w-3xl mx-auto flex flex-col px-4 md:px-0 py-10 justify-evenly gap-y-3 w-full min-h-[76vh]"
+          className="max-w-3xl mx-auto flex flex-col px-5 md:px-0 py-10 justify-evenly gap-y-3 w-full min-h-[76vh]"
           onSubmit={handleSubmit(onSubmit)}
         >
-          <strong className="self-start text-xl">Tipo de QR a generar</strong>
-          <div className="flex justify-start min-[600px]:justify-between flex-wrap gap-x-6 gap-y-3">
-            {types.map((type, index) => (
-              <label
-                className="flex items-center gap-x-2 font-semibold text-lg"
-                key={index}
+          <div className="grid grid-cols-1 gap-y-5 gap-x-8 md:grid-cols-2">
+            <div className="flex flex-col gap-y-3">
+              <strong className="self-start text-xl">
+                Tipo de QR a generar
+              </strong>
+              <select
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                {...register("qrType", {
+                  required: true,
+                })}
               >
+                {types.map((type, index) => {
+                  return (
+                    <option key={index} value={type}>
+                      {type}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <div className="flex flex-col gap-y-3">
+              <strong className="self-start text-xl">
+                Formato de la imágen
+              </strong>
+              <select
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                {...register("ext", {
+                  required: true,
+                })}
+              >
+                {formats.map((format, index) => {
+                  return (
+                    <option key={index} value={format}>
+                      {format.toUpperCase()}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <div className="flex flex-col gap-y-3">
+              <strong className="self-start text-xl">
+                Tamaño de la imágen
+              </strong>
+              <label className="flex items-center gap-x-2 font-semibold">
                 <input
-                  type="radio"
-                  value={type.label}
-                  className="size-4 accent-neutral-500 dark:accent-neutral-600"
-                  {...register("qrType")}
+                  type="number"
+                  placeholder="500"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  {...register("size", {
+                    required: true,
+                    min: 100,
+                    max: 2000,
+                  })}
                 />
-                {type.label}
+                px
               </label>
-            ))}
-          </div>
-          <strong className="self-start text-xl">Formato de la imagen</strong>
-          <div className="flex flex-wrap gap-x-6 gap-y-3">
-            <label className="flex items-center gap-x-2 font-semibold text-lg">
-              <input
-                type="radio"
-                value=".png"
-                className="size-4 accent-neutral-500 dark:accent-neutral-600"
-                {...register("ext")}
-              />
-              PNG
-            </label>
-            <label className="flex items-center gap-x-2 font-semibold text-lg">
-              <input
-                type="radio"
-                value=".svg"
-                className="size-4 accent-neutral-500 dark:accent-neutral-600"
-                {...register("ext")}
-              />
-              SVG
-            </label>
+              {errors.size?.type === "required" && (
+                <ErrorSpan className="-mt-3 ms-0">
+                  Debes ingresar un tamaño
+                </ErrorSpan>
+              )}
+              {errors.size?.type === "min" && (
+                <ErrorSpan className="-mt-3 ms-0">
+                  El tamaño debe ser superior a 100px
+                </ErrorSpan>
+              )}
+              {errors.size?.type === "max" && (
+                <ErrorSpan className="-mt-3 ms-0">
+                  El tamaño debe ser inferior a 2000px
+                </ErrorSpan>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-x-5 [&>label]:text-start [&>label]:font-bold [&>label]:flex [&>label]:flex-col [&>label]:justify-between [&>label]:text-xl [&>label]:gap-y-3 md:[&>label]:gap-y-0">
+              <label>
+                Color de fondo
+                <input
+                  type="color"
+                  className="bg-gray-50 h-10 px-2 py-1 dark:bg-gray-700 w-full border border-gray-300 dark:border-gray-600 rounded-lg"
+                  {...register("background", {
+                    required: true,
+                  })}
+                />
+              </label>
+              <label>
+                Color del Qr
+                <input
+                  type="color"
+                  className="bg-gray-50 h-10 px-2 py-1 dark:bg-gray-700 w-full border border-gray-300 dark:border-gray-600 rounded-lg"
+                  {...register("foreground", {
+                    required: true,
+                  })}
+                />
+              </label>
+            </div>
           </div>
           {qrType === "Url" && <UrlForm registry={register} errors={errors} />}
           {qrType === "Texto" && (
@@ -164,7 +219,7 @@ export const Form = () => {
           <button className="btn self-center">Generar código QR</button>
         </form>
       ) : (
-        <Qr src={base64Qr} setSrc={setBase64Qr} />
+        <Qr src={base64Qr} setSrc={setBase64Qr} ext={watch("ext")} />
       )}
     </>
   );

@@ -25,10 +25,10 @@
       "@components/*": ["src/components/*"],
       "@icons/*": ["src/icons/*"],
       "@types": ["src/types.d.ts"],
-      "@utils/*": ["src/utils/*"]
+      "@utils/*": ["src/utils/*"],
+      "@const": ["src/const.ts"]
     }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
-
